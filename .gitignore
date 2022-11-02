@@ -1,0 +1,9 @@
+# produced by devel/setup
+/.env/
+
+# working dir for bin/generate and bin/send
+/work/
+
+# .ndjson files are likely for use with bin/generate's --copies and will
+# contain personal information we shouldn't commit.
+*.ndjson

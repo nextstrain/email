@@ -1,0 +1,76 @@
+#!/bin/bash
+set -euo pipefail
+
+source "$(dirname "$0")/_common"
+
+main() {
+    log "Setting up $env"
+    remove
+    create
+}
+
+remove() {
+    if [[ -e "$env" ]]; then
+        log "Removing existing env"
+        rm -rf "$env"
+    fi
+}
+
+create() {
+    local -a pkgs=(
+        perl
+
+        # For installing Perl modules
+        perl-app-cpanminus
+        perl-io-socket-ssl
+
+        # For building Perl XS (i.e. C interface) modules
+        compilers
+    )
+
+    log "Creating new env with packages: ${pkgs[*]}"
+    conda-ish create \
+        --yes \
+        --prefix "$env" \
+        --override-channels \
+        --channel conda-forge \
+        "${pkgs[@]}"
+
+    log "Installing dependencies from $repo/devel/cpanfile"
+    cpanm \
+        --installdeps \
+        --with-recommends \
+        --mirror https://cpan.metacpan.org \
+        --notest \
+        --no-prompt \
+        "$repo/devel"
+}
+
+conda-ish() {
+    for condaish in micromamba mamba conda; do
+        if type -a "$condaish" >/dev/null 2>&1; then
+            "$condaish" "$@"
+            return $?
+        fi
+    done
+    echo "No conda-ish program (micromamba, mamba, conda) found" >&2
+    return 1
+}
+
+cpanm() {
+    # Probably no one else on the team has a custom PERL_CPANM_OPT set, but
+    # ensure it doesn't interfere with this automated, managed setup.
+    unset PERL_CPANM_OPT
+
+    # Run in a subshell so compiler-setup only affects it
+    (compiler-setup && "$env"/bin/cpanm "$@")
+}
+
+compiler-setup() {
+    log "Setting up compilation environment"
+
+    log "Adding $env/bin to PATH"
+    export PATH="$env/bin:$PATH"
+}
+
+main "$@"

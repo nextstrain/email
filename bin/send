@@ -1,0 +1,161 @@
+#!/bin/bash
+exec "$(dirname "$0")"/../.env/bin/perl -x "$0" "$@"
+
+#!perl
+# vim: set ft=perl :
+use 5.032;
+use strict;
+use warnings;
+use utf8;
+use open qw< :std :encoding(utf-8) >;
+
+use Email::MIME;
+use Email::Sender::Simple qw< sendmail >;
+use Email::Sender::Transport::SMTP::Persistent;
+use Getopt::Long 2.32 qw< :config auto_help >;
+use Try::Tiny;
+use Path::Tiny qw< path >;
+use Pod::Usage qw< pod2usage >;
+
+=head1 USAGE
+
+  ./bin/send [--outbox <dir>] [--sent <dir>] [--failed <dir>]
+
+Sends an outbox maildir of messages via SMTP.
+
+Successfully sent messages are recorded in the C<--sent> maildir.  A
+C<Send-Status> header is added containing the final successful SMTP response,
+which usually includes a remote queue id useful for tracing delivery.
+
+Individual message sending failures are not fatal.  Failed messages are
+recorded in the C<--failed> maildir.  A C<Send-Status> header is added
+containing the error message.
+
+=over 2
+
+=over 4
+
+=item --outbox <dir>
+
+Directory (a maildir) of messages to send.
+Default is C<work/outbox>.
+
+=item --sent <dir>
+
+Directory (a maildir) in which to record messages that were successfully sent.
+For safety, must not already exist!
+Default is C<work/sent>.
+
+=item --failed <dir>
+
+Directory (a maildir) in which to record messages that failed to send.
+For safety, must not already exist!
+Default is C<work/failed>.
+
+=back
+
+=back
+
+The SMTP server to connect to is controlled by the following environment
+variables:
+
+=over 2
+
+=over 4
+
+=item SMTP_HOST
+
+Server address or hostname, sans port.
+
+=item SMTP_SSL
+
+C<ssl> or C<1> to make the initial connection over SSL/TLS on port 465.
+C<starttls> to make the initial connection on port 587 and upgrade it to SSL/TLS.
+Defaults to C<starttls>.
+
+=item SMTP_USERNAME
+
+=item SMTP_PASSWORD
+
+Credentials.
+
+=back
+
+=back
+
+=cut
+
+my $opt = {
+    outbox => "work/outbox",
+    sent   => "work/sent",
+    failed => "work/failed",
+};
+GetOptions($opt, "outbox=s", "sent=s", "failed=s")
+    or die pod2usage(2);
+
+die "sent maildir '", $opt->{sent}, "' exists already!\n"
+    if -e $opt->{sent};
+
+die "failed maildir '", $opt->{failed}, "' exists already!\n"
+    if -e $opt->{failed};
+
+my $outbox = [
+    path($opt->{outbox})->child("cur")->children,
+    path($opt->{outbox})->child("new")->children,
+];
+
+my $smtp = Email::Sender::Transport::SMTP::Persistent->new({
+    ($ENV{SMTP_HOST}
+        ? (host => $ENV{SMTP_HOST})
+        : ()),
+    ($ENV{SMTP_USERNAME}
+        ? (sasl_username => $ENV{SMTP_USERNAME})
+        : ()),
+    ($ENV{SMTP_PASSWORD}
+        ? (sasl_password => $ENV{SMTP_PASSWORD})
+        : ()),
+    ssl => $ENV{SMTP_SSL} // "starttls",
+});
+
+my $sent   = path($opt->{sent});
+my $failed = path($opt->{failed});
+
+$sent->child($_)->mkdir for qw< cur new tmp >;
+$failed->child($_)->mkdir for qw< cur new tmp >;
+
+my $exit = 0;
+
+for my $msgfile ($outbox->@*) {
+    my $msg = Email::MIME->new($msgfile->slurp_utf8);
+
+    try {
+        my $success = sendmail($msg, { transport => $smtp });
+
+        my $smtp_response = $success->message =~ s/\n+\z//r;
+        say "$msgfile: sent: ", $smtp_response;
+
+        $msg->header_set("Send-Status", "sent: $smtp_response");
+
+        try {
+            $sent->child("new", $msgfile->basename)->spew($msg->as_string);
+        } catch {
+            # not great, but not fatal, and the message is already out of our hands
+            warn "$msgfile: error copying to sent: $_\n";
+        }
+    } catch {
+        my $err = $_;
+        my $errmsg = try { $err->isa("Email::Sender::Failure") }
+            ? $err->message
+            : "$err";
+        $errmsg =~ s/\n+\z//;
+
+        warn "$msgfile: failed: $errmsg\n";
+
+        $msg->header_set("Send-Status", "failed: $errmsg");
+        $failed->child("new", $msgfile->basename)->spew($msg->as_string);
+
+        $exit = 1;
+    };
+}
+
+exit $exit;

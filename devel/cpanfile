@@ -1,0 +1,12 @@
+requires 'Authen::SASL';
+requires 'Email::MIME';
+requires 'Email::MIME::Kit', '>=3.000006';
+requires 'Email::MIME::Kit::ManifestReader::YAML';
+requires 'Email::MIME::Kit::Renderer::TT';
+requires 'Email::Sender::Simple';
+requires 'Getopt::Long', '>=2.32';
+requires 'IO::Socket::SSL';
+requires 'JSON::PP';
+requires 'MIME::Base64';
+requires 'Path::Tiny';
+requires 'Try::Tiny';

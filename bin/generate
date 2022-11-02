@@ -1,0 +1,76 @@
+#!/bin/bash
+exec "$(dirname "$0")"/../.env/bin/perl -x "$0" "$@"
+
+#!perl
+# vim: set ft=perl :
+use 5.032;
+use strict;
+use warnings;
+use utf8;
+use open qw< :std :encoding(utf-8) >;
+
+use Email::MIME::Kit 3.000006;
+use Email::Sender::Simple qw< sendmail >;
+use Email::Sender::Transport::Maildir;
+use Getopt::Long 2.32 qw< :config auto_help >;
+use JSON::PP qw< decode_json >;
+use Path::Tiny qw< path >;
+use Pod::Usage qw< pod2usage >;
+
+=head1 USAGE
+
+  ./bin/generate --kit <dir> --copies <file.ndjson> [--outbox <dir>]
+
+Generates an outbox maildir of messages from a message kit and a set of desired
+copies.
+
+The filenames of the generated messages are written to stdout.
+
+=over 4
+
+=item --kit <dir>
+
+B<Required.> Directory containing a message kit.
+
+=item --copies <file.ndjson>
+
+B<Required.>
+NDJSON file containing one record per message to generate from the kit.
+
+Fields in each record will be available as template variables.
+At a minimum, records will typically require a field containing the receipient (e.g. C<to>) that's used in the headers (e.g. C<To:>) found in the message kit manifest.
+
+=item --outbox <dir>
+
+Directory (a maildir) for output.
+For safety, must not already exist!
+Default is C<work/outbox>.
+
+=back
+
+=cut
+
+my $opt = {
+    kit => undef,
+    copies => undef,
+    outbox => "work/outbox",
+};
+GetOptions($opt, "kit=s", "copies=s", "outbox=s")
+    or die pod2usage(2);
+
+die pod2usage(2) unless $opt->{kit} and $opt->{copies};
+die "outbox maildir '", $opt->{outbox}, "' exists already!\n"
+    if -e $opt->{outbox};
+
+my $outbox = Email::Sender::Transport::Maildir->new({ dir => $opt->{outbox} });
+my $msgkit = Email::MIME::Kit->new({
+    source => $opt->{kit},
+    manifest_reader => 'YAML',
+});
+my $copies = path($opt->{copies})->openr_utf8;
+
+while (my $copy = <$copies>) {
+    my $msg = $msgkit->assemble(decode_json($copy));
+    my $success = $outbox->send($msg, {});
+    say $success->filename;
+}
