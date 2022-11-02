@@ -1,0 +1,14 @@
+---
+renderer: TT
+
+header:
+  - Subject: "Action requested: Improvements to how you managed your Nextstrain Group"
+  - From: "Nextstrain <hello@nextstrain.org>"
+  - To: "[% to %]"
+
+alternatives:
+  - type: text/plain
+    path: body.txt
+
+  - type: text/html
+    path: body.html

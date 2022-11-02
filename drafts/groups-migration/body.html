@@ -1,0 +1,25 @@
+<p>
+Hello!
+
+<p>
+It’s the Nextstrain team.
+We’re writing to let you know about improvements we’ve made to how you manage your data in Nextstrain Groups.
+We’ve put together <a href="https://docs.nextstrain.org/page/guides/share/groups/migrate-from-s3.html">a documentation page</a> with information about the changes, including the actions requested of you.
+<strong>Please review the details there and reply to this email with the information requested.</strong>
+
+<p>
+You’re receiving this email because you’re a contact for one or more Nextstrain Groups:
+
+<ul>
+[%- FOREACH group IN groups %]
+  <li><a href="https://nextstrain.org/groups/[% group | uri %]">nextstrain.org/groups/[% group | html %]</a></li>
+[%- END %]
+</ul>
+
+<p>
+Thank you for being an early adopter of Nextstrain Groups!
+We’re excited to keep improving the functionality of Groups.
+If you have any feedback, please don’t hesitate to <a href="mailto:hello@nextstrain.org">email us</a> or post to <a href="https://discussions.nextstrain.org">discussions.nextstrain.org</a>.
+
+<p>
+—the Nextstrain team
