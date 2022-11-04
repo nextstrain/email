@@ -10,7 +10,7 @@ actions requested of you:
 ** Please review the details there and reply to this email with the information
 requested. **
 
-You’re receiving this email because you’re a contact for one or more Nextstrain
+You’re receiving this email because you’re an owner of one or more Nextstrain
 Groups:
 
 [%- FOREACH group IN groups %]
