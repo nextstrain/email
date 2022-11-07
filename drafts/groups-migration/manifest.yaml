@@ -4,7 +4,7 @@ renderer: TT
 header:
   - Subject: "Action requested: Improvements to how you managed your Nextstrain Group"
   - From: "Nextstrain <hello@nextstrain.org>"
-  - To: "[% to %]"
+  - To: "[% to.join(', ') %]"
 
 alternatives:
   - type: text/plain
