@@ -127,12 +127,13 @@ my $exit = 0;
 
 for my $msgfile ($outbox->@*) {
     my $msg = Email::MIME->new($msgfile->slurp_utf8);
+    my $msgid = $msg->header("Message-ID");
 
     try {
         my $success = sendmail($msg, { transport => $smtp });
 
         my $smtp_response = $success->message =~ s/\n+\z//r;
-        say "$msgfile: sent: ", $smtp_response;
+        say "$msgfile: $msgid sent: ", $smtp_response;
 
         $msg->header_set("Send-Status", "sent: $smtp_response");
 
@@ -140,7 +141,7 @@ for my $msgfile ($outbox->@*) {
             $sent->child("new", $msgfile->basename)->spew($msg->as_string);
         } catch {
             # not great, but not fatal, and the message is already out of our hands
-            warn "$msgfile: error copying to sent: $_\n";
+            warn "$msgfile: $msgid: error copying to sent: $_\n";
         }
     } catch {
         my $err = $_;
@@ -149,7 +150,7 @@ for my $msgfile ($outbox->@*) {
             : "$err";
         $errmsg =~ s/\n+\z//;
 
-        warn "$msgfile: failed: $errmsg\n";
+        warn "$msgfile: $msgid: failed: $errmsg\n";
 
         $msg->header_set("Send-Status", "failed: $errmsg");
         $failed->child("new", $msgfile->basename)->spew($msg->as_string);
