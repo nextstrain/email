@@ -54,7 +54,7 @@ The sending process uses a _work/_ directory to allow for a two-phase process.
 
 First, generate messages from a kit into the _work/outbox/_ maildir:
 
-    ./bin/generate --kit drafts/some-message/ --copies recipients.json
+    ./bin/generate --kit drafts/some-message/ --copies recipients.ndjson
 
 This will produce one file per message in _work/outbox/new/_.  You can review
 these with a text editor or a mail program of your choice.  (I like `mutt -Rf
