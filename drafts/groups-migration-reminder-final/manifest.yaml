@@ -1,0 +1,14 @@
+---
+renderer: TT
+
+header:
+  - Subject: "Final reminder: Upgrade of your Nextstrain Group"
+  - From: "Nextstrain <hello@nextstrain.org>"
+  - To: "[% to.join(', ') %]"
+
+alternatives:
+  - type: text/plain
+    path: body.txt
+
+  - type: text/html
+    path: body.html
