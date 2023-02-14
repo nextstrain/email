@@ -19,8 +19,8 @@ including the actions required of you:
 ** Please review the details there and reply to this email with the information
 required before the end of February 2023. **
 
-You’re receiving this email because you’re an owner of one or more Nextstrain
-Groups:
+You’re receiving this email because you’re an owner or editor of one or more
+Nextstrain Groups:
 
 [%- FOREACH group IN groups %]
     - https://nextstrain.org/groups/[% group | uri %]
