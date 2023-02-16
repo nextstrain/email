@@ -1,0 +1,28 @@
+<p>
+Hello,
+
+<p>
+This is a reminder that your [% IF groups.size > 1 %]Nextstrain Groups are[% ELSE %]Nextstrain Group is[% END %] set to be upgraded after the end of the month (as early as 1 March 2023).
+You’re receiving this email because you’re an owner or editor of the Nextstrain Group[% IF groups.size > 1 %]s[% END %]:
+
+<ul>
+[%- FOREACH group IN groups %]
+  <li><a href="https://nextstrain.org/groups/[% group | uri %]">nextstrain.org/groups/[% group | html %]</a></li>
+[%- END %]
+</ul>
+
+<p>
+We <a href="https://docs.nextstrain.org/en/latest/guides/share/groups/migrate-from-s3.html#notification">previously emailed</a> you on 10 January 2023 and 7 November 2022 about improvements we’ve made to how Nextstrain Groups are managed.
+This is a second and final reminder since we haven’t heard back from you yet and would still like your co-operation when upgrading your Group[% IF groups.size > 1 %]s[% END %].
+
+<p>
+The upgrade may <strong>temporarily disrupt your ability to upload new datasets and manage existing datasets</strong> until you complete your own part of the upgrade.
+We’ve put together <a href="https://docs.nextstrain.org/page/guides/share/groups/migrate-from-s3.html">a documentation page</a> with information about the changes, including the actions required of you.
+
+<p>
+Thank you for being an early adopter of Nextstrain Groups!
+We’re excited to keep improving the functionality of Groups.
+If you have any feedback, please don’t hesitate to <a href="mailto:hello@nextstrain.org">email us</a> or post to <a href="https://discussions.nextstrain.org">discussions.nextstrain.org</a>.
+
+<p>
+—the Nextstrain team
