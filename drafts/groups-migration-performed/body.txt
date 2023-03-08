@@ -1,0 +1,23 @@
+Hello,
+
+Your [% IF groups.size > 1 %]Nextstrain Groups have[% ELSE %]Nextstrain Group has[% END %] now been upgraded as per our previous emails.
+You’re receiving this email because you’re an owner or editor of the
+Nextstrain Group[% IF groups.size > 1 %]s[% END %]:
+
+[%- FOREACH group IN groups %]
+    - https://nextstrain.org/groups/[% group | uri %]
+[%- END %]
+
+You’ll need to complete your own part of the upgrade when you’re ready
+to upload new datasets and manage existing datasets.  Our documentation
+page about this upgrade (or “migration”) has more information about the
+changes and your part of them:
+
+    https://docs.nextstrain.org/page/guides/share/groups/migrate-from-s3.html
+
+Thank you for being an early adopter of Nextstrain Groups!  We’re
+excited to keep improving the functionality of Groups.  If you have any
+feedback, please don’t hesitate to email us <hello@nextstrain.org> or
+post to <https://discussions.nextstrain.org>.
+
+—the Nextstrain team
